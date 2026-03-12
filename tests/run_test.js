@@ -8,7 +8,7 @@ const { execSync } = require('child_process');
 
   console.log('Launching browser with extension...');
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: true,
     executablePath: '/usr/bin/google-chrome',
     args: [
       `--disable-extensions-except=${extensionPath}`,
