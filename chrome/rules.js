@@ -11,14 +11,14 @@ const SENSITIVE_PATTERNS = [
     replacement: "[REDACTED_IP]"
   },
   {
-    name: "Generic API Key (Basic)",
-    regex: /([A-Za-z0-9]{20,})/g, // Very broad, purely illustrative
-    replacement: "[REDACTED_API_KEY]"
-  },
-  {
     name: "AWS Access Key",
     regex: /(AKIA|ASIA)[0-9A-Z]{16}/g,
     replacement: "[REDACTED_AWS_KEY]"
+  },
+  {
+    name: "Generic API Key (Basic)",
+    regex: /([A-Za-z0-9]{20,})/g, // Very broad, purely illustrative
+    replacement: "[REDACTED_API_KEY]"
   }
 ];
 
@@ -28,4 +28,8 @@ function sanitizeText(text) {
     sanitized = sanitized.replace(rule.regex, rule.replacement);
   });
   return sanitized;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { sanitizeText, SENSITIVE_PATTERNS };
 }
