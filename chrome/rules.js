@@ -24,9 +24,9 @@ const SENSITIVE_PATTERNS = [
 
 function sanitizeText(text) {
   let sanitized = text;
-  SENSITIVE_PATTERNS.forEach(rule => {
+  for (const rule of SENSITIVE_PATTERNS) {
     sanitized = sanitized.replace(rule.regex, rule.replacement);
-  });
+  }
   return sanitized;
 }
 
