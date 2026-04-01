@@ -3,12 +3,7 @@
   "name": "AI Clipboard Sanitizer",
   "version": "1.0",
   "description": "Automatically strips sensitive data when pasting into AI tools (ChatGPT, Gemini, Claude).",
-  "permissions": [
-    "clipboardRead",
-    "clipboardWrite",
-    "activeTab",
-    "scripting"
-  ],
+  "permissions": [],
   "host_permissions": [
     "https://chat.openai.com/*",
     "https://gemini.google.com/*",

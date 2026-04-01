@@ -21,25 +21,29 @@ const { execSync } = require('child_process');
   const page = await browser.newPage();
   await page.goto(testHtmlPath);
 
+  // Manually inject rules.js and content.js as extension loading might be flaky in headless
+  await page.addScriptTag({ path: path.resolve(__dirname, '../rules.js') });
+  await page.addScriptTag({ path: path.resolve(__dirname, '../content.js') });
+
   // Sensitive string
   const sensitiveText = "Contact me at bob@example.com or use key AKIA1234567890123456";
   console.log("Original text: " + sensitiveText);
 
-  // Write to clipboard via xclip
-  try {
-      execSync(`printf "${sensitiveText}" | xclip -selection clipboard`);
-  } catch (e) {
-      console.error("xclip failed:", e);
-  }
-
   // Focus textarea
   await page.focus('#target');
 
-  // Paste
+  // Paste via dispatching event (avoids xclip dependency)
   console.log("Pasting...");
-  await page.keyboard.down('Control');
-  await page.keyboard.press('V');
-  await page.keyboard.up('Control');
+  await page.evaluate((text) => {
+    const dataTransfer = new DataTransfer();
+    dataTransfer.setData('text', text);
+    const event = new ClipboardEvent('paste', {
+      clipboardData: dataTransfer,
+      bubbles: true,
+      cancelable: true
+    });
+    document.getElementById('target').dispatchEvent(event);
+  }, sensitiveText);
 
   // Give extension time to react
   await new Promise(r => setTimeout(r, 1000));
