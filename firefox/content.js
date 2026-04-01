@@ -1,7 +1,7 @@
 // Listen for paste events
 document.addEventListener('paste', (event) => {
   // 1. Get clipboard data
-  const clipboardData = (event.clipboardData || window.clipboardData);
+  const clipboardData = event.clipboardData;
   const pastedText = clipboardData.getData('text');
 
   if (!pastedText) return;

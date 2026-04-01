@@ -25,21 +25,21 @@ const { execSync } = require('child_process');
   const sensitiveText = "Contact me at bob@example.com or use key AKIA1234567890123456";
   console.log("Original text: " + sensitiveText);
 
-  // Write to clipboard via xclip
-  try {
-      execSync(`printf "${sensitiveText}" | xclip -selection clipboard`);
-  } catch (e) {
-      console.error("xclip failed:", e);
-  }
-
   // Focus textarea
   await page.focus('#target');
 
-  // Paste
-  console.log("Pasting...");
-  await page.keyboard.down('Control');
-  await page.keyboard.press('V');
-  await page.keyboard.up('Control');
+  // Paste simulation using ClipboardEvent
+  console.log("Simulating paste via ClipboardEvent...");
+  await page.evaluate((text) => {
+    const dataTransfer = new DataTransfer();
+    dataTransfer.setData('text/plain', text);
+    const event = new ClipboardEvent('paste', {
+      clipboardData: dataTransfer,
+      bubbles: true,
+      cancelable: true
+    });
+    document.querySelector('#target').dispatchEvent(event);
+  }, sensitiveText);
 
   // Give extension time to react
   await new Promise(r => setTimeout(r, 1000));
