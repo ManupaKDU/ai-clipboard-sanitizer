@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { sanitizeText } = require('../rules');
+const { sanitizeText } = require('../src/rules');
 
 function testSanitizeText() {
   console.log('Running unit tests for sanitizeText...');

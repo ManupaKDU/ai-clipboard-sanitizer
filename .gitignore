@@ -1,0 +1,16 @@
+# Build artifacts
+chrome/rules.js
+chrome/content.js
+chrome/background.js
+chrome/popup.js
+chrome/popup.html
+chrome/icons/
+firefox/rules.js
+firefox/content.js
+firefox/background.js
+firefox/popup.js
+firefox/popup.html
+firefox/icons/
+
+# Dependencies
+node_modules/

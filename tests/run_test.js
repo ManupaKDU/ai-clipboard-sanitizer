@@ -3,6 +3,9 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 (async () => {
+  console.log('Building extension...');
+  execSync('npm run build', { cwd: path.resolve(__dirname, '..') });
+
   const extensionPath = path.resolve(__dirname, '../chrome');
   const testHtmlPath = 'file://' + path.resolve(__dirname, 'test.html');
 
