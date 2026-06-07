@@ -60,6 +60,28 @@ function testSanitizeText() {
     'Should handle empty strings'
   );
 
+
+  // 9. Null input
+  assert.strictEqual(
+    sanitizeText(null),
+    null,
+    'Should handle null input'
+  );
+
+  // 10. Undefined input
+  assert.strictEqual(
+    sanitizeText(undefined),
+    undefined,
+    'Should handle undefined input'
+  );
+
+  // 11. Number input
+  assert.strictEqual(
+    sanitizeText(12345),
+    12345,
+    'Should handle number input'
+  );
+
   console.log('All unit tests passed!');
 }
 
