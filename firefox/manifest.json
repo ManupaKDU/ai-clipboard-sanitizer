@@ -9,15 +9,6 @@
     "activeTab",
     "scripting"
   ],
-  "host_permissions": [
-    "https://chat.openai.com/*",
-    "https://gemini.google.com/*",
-    "https://claude.ai/*",
-    "https://copilot.microsoft.com/*"
-  ],
-  "background": {
-    "scripts": ["background.js"]
-  },
   "content_scripts": [
     {
       "matches": [
@@ -26,7 +17,10 @@
         "https://claude.ai/*",
         "https://copilot.microsoft.com/*"
       ],
-      "js": ["rules.js", "content.js"]
+      "js": [
+        "rules.js",
+        "content.js"
+      ]
     }
   ],
   "action": {
