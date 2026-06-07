@@ -1,10 +1,15 @@
 const puppeteer = require('puppeteer');
 const path = require('path');
-const { execSync } = require('child_process');
+const { spawn } = require('child_process');
 
 (async () => {
+  // Start a local server
+  const server = spawn('python3', ['-m', 'http.server', '8000'], { cwd: __dirname });
+
+  await new Promise(r => setTimeout(r, 2000));
+
   const extensionPath = path.resolve(__dirname, '../chrome');
-  const testHtmlPath = 'file://' + path.resolve(__dirname, 'test.html');
+  const testUrl = 'http://localhost:8000/test.html';
 
   console.log('Launching browser with extension...');
   const browser = await puppeteer.launch({
@@ -18,62 +23,57 @@ const { execSync } = require('child_process');
     ]
   });
 
-  const page = await browser.newPage();
-  await page.goto(testHtmlPath);
+  try {
+    const page = await browser.newPage();
+    page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+    await page.goto(testUrl);
 
-  // Manually inject scripts since file:// is no longer matched
-  const fs = require('fs');
-  const rulesCode = fs.readFileSync(path.resolve(__dirname, '../rules.js'), 'utf8');
-  const contentCode = fs.readFileSync(path.resolve(__dirname, '../content.js'), 'utf8');
-  await page.evaluate((rules, content) => {
-    const rulesScript = document.createElement('script');
-    rulesScript.textContent = rules;
-    document.head.appendChild(rulesScript);
+    // Wait for content script to signal it's loaded
+    await new Promise(r => setTimeout(r, 2000));
 
-    const contentScript = document.createElement('script');
-    contentScript.textContent = content;
-    document.head.appendChild(contentScript);
-  }, rulesCode, contentCode);
+    // Sensitive string
+    const sensitiveText = "Contact me at bob@example.com or use key AKIA1234567890123456";
+    console.log("Original text: " + sensitiveText);
 
-  // Sensitive string
-  const sensitiveText = "Contact me at bob@example.com or use key AKIA1234567890123456";
-  console.log("Original text: " + sensitiveText);
+    // Simulate paste event
+    console.log("Simulating paste...");
+    await page.evaluate((text) => {
+      const target = document.querySelector('#target');
+      target.focus();
 
-  // Simulate paste event
-  console.log("Pasting via simulated event...");
-  await page.evaluate((text) => {
-    const target = document.getElementById('target');
-    target.focus();
+      // We need to trigger the paste event on the target
+      const event = new Event('paste', { bubbles: true, cancelable: true });
+      event.clipboardData = {
+        getData: (type) => {
+          if (type === 'text/plain' || type === 'text') return text;
+          return '';
+        }
+      };
+      target.dispatchEvent(event);
 
-    // Create custom DataTransfer object
-    const dataTransfer = new DataTransfer();
-    dataTransfer.setData('text/plain', text);
+      // If the extension's event listener is not triggered by a synthetic event,
+      // we might need to manually call the sanitize logic if we were testing the logic,
+      // but here we want to test the integration.
+    }, sensitiveText);
 
-    // Create and dispatch paste event
-    const pasteEvent = new ClipboardEvent('paste', {
-      clipboardData: dataTransfer,
-      bubbles: true,
-      cancelable: true
-    });
+    // Give extension time to react
+    await new Promise(r => setTimeout(r, 1000));
 
-    // If event is not canceled (which the extension shouldn't do since it only mutates event or modifies target),
-    // and we simulate the actual paste behavior if needed, but the extension intercepts it anyway
-    target.dispatchEvent(pasteEvent);
+    await page.screenshot({ path: 'screenshot.png' });
 
-    // Since the extension intercepts paste event and sets target.value directly, this should be enough
-  }, sensitiveText);
+    const result = await page.$eval('#target', el => el.value);
+    console.log("Pasted text:   " + result);
 
-  // Give extension time to react
-  await new Promise(r => setTimeout(r, 1000));
-
-  const result = await page.$eval('#target', el => el.value);
-  console.log("Pasted text:   " + result);
-
-  if (result.includes('[REDACTED_EMAIL]') && result.includes('[REDACTED_AWS_KEY]')) {
-      console.log("TEST PASSED: Sanitization successful.");
-  } else {
-      console.log("TEST FAILED: Sanitization failed. Content was: " + result);
+    if (result.includes('[REDACTED_EMAIL]') && result.includes('[REDACTED_AWS_KEY]')) {
+        console.log("TEST PASSED: Sanitization successful.");
+    } else {
+        console.log("TEST FAILED: Sanitization failed. Content was: '" + result + "'");
+    }
+  } catch (err) {
+    console.error("Error during test:", err);
+  } finally {
+    await browser.close();
+    server.kill();
+    process.exit(0);
   }
-
-  await browser.close();
 })();
