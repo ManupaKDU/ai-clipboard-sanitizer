@@ -67,12 +67,41 @@ const { execSync } = require('child_process');
   await new Promise(r => setTimeout(r, 1000));
 
   const result = await page.$eval('#target', el => el.value);
-  console.log("Pasted text:   " + result);
+  console.log("Pasted text (textarea):   " + result);
 
-  if (result.includes('[REDACTED_EMAIL]') && result.includes('[REDACTED_AWS_KEY]')) {
-      console.log("TEST PASSED: Sanitization successful.");
+  console.log("Pasting via simulated event to input...");
+  await page.evaluate((text) => {
+    const target = document.getElementById('target-input');
+    target.focus();
+
+    // Create custom DataTransfer object
+    const dataTransfer = new DataTransfer();
+    dataTransfer.setData('text/plain', text);
+
+    // Create and dispatch paste event
+    const pasteEvent = new ClipboardEvent('paste', {
+      clipboardData: dataTransfer,
+      bubbles: true,
+      cancelable: true
+    });
+
+    target.dispatchEvent(pasteEvent);
+  }, sensitiveText);
+
+  // Give extension time to react
+  await new Promise(r => setTimeout(r, 1000));
+
+  const resultInput = await page.$eval('#target-input', el => el.value);
+  console.log("Pasted text (input):      " + resultInput);
+
+  if (result.includes('[REDACTED_EMAIL]') && result.includes('[REDACTED_AWS_KEY]') &&
+      resultInput.includes('[REDACTED_EMAIL]') && resultInput.includes('[REDACTED_AWS_KEY]')) {
+      console.log("TEST PASSED: Sanitization successful for both elements.");
   } else {
-      console.log("TEST FAILED: Sanitization failed. Content was: " + result);
+      console.log("TEST FAILED: Sanitization failed.");
+      console.log("Textarea content was: " + result);
+      console.log("Input content was: " + resultInput);
+      process.exit(1);
   }
 
   await browser.close();
