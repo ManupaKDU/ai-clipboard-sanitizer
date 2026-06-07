@@ -27,7 +27,5 @@ document.addEventListener('paste', (event) => {
     } else if (activeElement.isContentEditable) {
       document.execCommand('insertText', false, sanitizedText);
     }
-    
-    console.log("[AI Sanitizer] Sensitive data redacted!");
   }
 });
