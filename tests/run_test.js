@@ -64,7 +64,7 @@ const { execSync } = require('child_process');
   }, sensitiveText);
 
   // Give extension time to react
-  await new Promise(r => setTimeout(r, 1000));
+  await page.waitForFunction(() => document.getElementById('target').value !== '', { timeout: 1000 });
 
   const result = await page.$eval('#target', el => el.value);
   console.log("Pasted text:   " + result);
