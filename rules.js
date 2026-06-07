@@ -23,6 +23,7 @@ const SENSITIVE_PATTERNS = [
 ];
 
 function sanitizeText(text) {
+  if (typeof text !== "string") return text;
   let sanitized = text;
   for (const rule of SENSITIVE_PATTERNS) {
     sanitized = sanitized.replace(rule.regex, rule.replacement);
