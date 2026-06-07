@@ -23,57 +23,44 @@ const { spawn } = require('child_process');
     ]
   });
 
-  try {
-    const page = await browser.newPage();
-    page.on('console', msg => console.log('PAGE LOG:', msg.text()));
-    await page.goto(testUrl);
+  const page = await browser.newPage();
+  await page.goto(testHtmlPath);
 
-    // Wait for content script to signal it's loaded
-    await new Promise(r => setTimeout(r, 2000));
+  // Manually inject rules.js and content.js as extension loading might be flaky in headless
+  await page.addScriptTag({ path: path.resolve(__dirname, '../rules.js') });
+  await page.addScriptTag({ path: path.resolve(__dirname, '../content.js') });
 
-    // Sensitive string
-    const sensitiveText = "Contact me at bob@example.com or use key AKIA1234567890123456";
-    console.log("Original text: " + sensitiveText);
+  // Sensitive string
+  const sensitiveText = "Contact me at bob@example.com or use key AKIA1234567890123456";
+  console.log("Original text: " + sensitiveText);
 
-    // Simulate paste event
-    console.log("Simulating paste...");
-    await page.evaluate((text) => {
-      const target = document.querySelector('#target');
-      target.focus();
+  // Focus textarea
+  await page.focus('#target');
 
-      // We need to trigger the paste event on the target
-      const event = new Event('paste', { bubbles: true, cancelable: true });
-      event.clipboardData = {
-        getData: (type) => {
-          if (type === 'text/plain' || type === 'text') return text;
-          return '';
-        }
-      };
-      target.dispatchEvent(event);
+  // Paste via dispatching event (avoids xclip dependency)
+  console.log("Pasting...");
+  await page.evaluate((text) => {
+    const dataTransfer = new DataTransfer();
+    dataTransfer.setData('text', text);
+    const event = new ClipboardEvent('paste', {
+      clipboardData: dataTransfer,
+      bubbles: true,
+      cancelable: true
+    });
+    document.getElementById('target').dispatchEvent(event);
+  }, sensitiveText);
 
-      // If the extension's event listener is not triggered by a synthetic event,
-      // we might need to manually call the sanitize logic if we were testing the logic,
-      // but here we want to test the integration.
-    }, sensitiveText);
+  // Give extension time to react
+  await new Promise(r => setTimeout(r, 1000));
 
-    // Give extension time to react
-    await new Promise(r => setTimeout(r, 1000));
+  const result = await page.$eval('#target', el => el.value);
+  console.log("Pasted text:   " + result);
 
-    await page.screenshot({ path: 'screenshot.png' });
-
-    const result = await page.$eval('#target', el => el.value);
-    console.log("Pasted text:   " + result);
-
-    if (result.includes('[REDACTED_EMAIL]') && result.includes('[REDACTED_AWS_KEY]')) {
-        console.log("TEST PASSED: Sanitization successful.");
-    } else {
-        console.log("TEST FAILED: Sanitization failed. Content was: '" + result + "'");
-    }
-  } catch (err) {
-    console.error("Error during test:", err);
-  } finally {
-    await browser.close();
-    server.kill();
-    process.exit(0);
+  if (result.includes('[REDACTED_EMAIL]') && result.includes('[REDACTED_AWS_KEY]')) {
+      console.log("TEST PASSED: Sanitization successful.");
+  } else {
+      console.log("TEST FAILED: Sanitization failed. Content was: " + result);
   }
+
+  await browser.close();
 })();
