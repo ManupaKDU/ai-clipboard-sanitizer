@@ -22,9 +22,11 @@ const { execSync } = require('child_process');
   await page.goto(testHtmlPath);
 
   // Manually inject scripts since file:// is no longer matched
-  const fs = require('fs');
-  const rulesCode = fs.readFileSync(path.resolve(__dirname, '../rules.js'), 'utf8');
-  const contentCode = fs.readFileSync(path.resolve(__dirname, '../content.js'), 'utf8');
+  const fsPromises = require('fs').promises;
+  const [rulesCode, contentCode] = await Promise.all([
+    fsPromises.readFile(path.resolve(__dirname, '../rules.js'), 'utf8'),
+    fsPromises.readFile(path.resolve(__dirname, '../content.js'), 'utf8')
+  ]);
   await page.evaluate((rules, content) => {
     const rulesScript = document.createElement('script');
     rulesScript.textContent = rules;
