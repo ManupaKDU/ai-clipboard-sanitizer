@@ -1,3 +1,4 @@
+const { spawn } = require('child_process');
 const puppeteer = require('puppeteer');
 const path = require('path');
 
@@ -23,7 +24,7 @@ const path = require('path');
   });
 
   const page = await browser.newPage();
-  await page.goto(testHtmlPath);
+  await page.goto(testUrl);
 
   page.on('console', msg => console.log('PAGE LOG:', msg.text()));
 
@@ -66,8 +67,10 @@ const path = require('path');
       console.log("TEST PASSED: Sanitization successful.");
   } else {
       console.log("TEST FAILED: Sanitization failed. Content was: '" + result + "'");
+      server.kill();
       process.exit(1);
   }
 
   await browser.close();
+  server.kill();
 })();
