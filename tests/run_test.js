@@ -1,3 +1,4 @@
+
 const puppeteer = require('puppeteer');
 const path = require('path');
 
@@ -8,7 +9,7 @@ const path = require('path');
   await new Promise(r => setTimeout(r, 2000));
 
   const extensionPath = path.resolve(__dirname, '../chrome');
-  const testUrl = 'http://localhost:8000/test.html';
+  const testUrl = 'file://' + path.resolve(__dirname, 'test.html');
 
   console.log('Launching browser with extension...');
   const browser = await puppeteer.launch({
@@ -23,7 +24,7 @@ const path = require('path');
   });
 
   const page = await browser.newPage();
-  await page.goto(testHtmlPath);
+  await page.goto(testUrl);
 
   page.on('console', msg => console.log('PAGE LOG:', msg.text()));
 
