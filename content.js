@@ -24,8 +24,27 @@ document.addEventListener('paste', (event) => {
       const text = activeElement.value;
       activeElement.value = text.slice(0, start) + sanitizedText + text.slice(end);
       activeElement.selectionStart = activeElement.selectionEnd = start + sanitizedText.length;
+
+      // Dispatch input event for frameworks
+      activeElement.dispatchEvent(new Event('input', { bubbles: true }));
     } else if (activeElement.isContentEditable) {
-      document.execCommand('insertText', false, sanitizedText);
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return;
+
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+
+      const textNode = document.createTextNode(sanitizedText);
+      range.insertNode(textNode);
+
+      // Move cursor after the inserted text
+      range.setStartAfter(textNode);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      // Dispatch input event for frameworks
+      activeElement.dispatchEvent(new Event('input', { bubbles: true }));
     }
   }
 });
