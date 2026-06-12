@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer');
 const path = require('path');
+const { spawn } = require('child_process');
 
 (async () => {
   // Start a local server
@@ -23,7 +24,7 @@ const path = require('path');
   });
 
   const page = await browser.newPage();
-  await page.goto(testHtmlPath);
+  await page.goto(testUrl);
 
   page.on('console', msg => console.log('PAGE LOG:', msg.text()));
 
@@ -70,4 +71,5 @@ const path = require('path');
   }
 
   await browser.close();
+  server.kill();
 })();
