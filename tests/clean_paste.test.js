@@ -21,47 +21,42 @@ const path = require('path');
     const page = await browser.newPage();
     await page.goto(testUrl);
 
-    page.on('console', msg => console.log('PAGE LOG:', msg.text()));
-
-    // Manually inject scripts for testing if extension loading fails in headless mode
+    // Manually inject scripts for testing to ensure they are loaded
     await page.addScriptTag({ path: path.resolve(__dirname, '../rules.js') });
     await page.addScriptTag({ path: path.resolve(__dirname, '../content.js') });
-
-    // Sensitive string
-    const sensitiveText = "Contact me at bob@example.com or use key AKIA1234567890123456";
-    console.log("Original text: " + sensitiveText);
 
     // Focus textarea
     await page.focus('#target');
 
-    const isSanitizeTextDefined = await page.evaluate(() => typeof sanitizeText !== 'undefined');
-    console.log("Is sanitizeText defined in page? " + isSanitizeTextDefined);
-
-    // Simulate paste event via page.evaluate
-    console.log("Simulating paste event...");
-    await page.evaluate((text) => {
+    // Simulate paste event with clean clipboard data
+    console.log("Simulating clean paste event...");
+    const result = await page.evaluate(() => {
       const activeElement = document.getElementById('target');
       activeElement.focus();
       const dataTransfer = new DataTransfer();
+      const text = 'Just some completely normal text.';
       dataTransfer.setData('text', text);
       const event = new ClipboardEvent('paste', {
         clipboardData: dataTransfer,
         bubbles: true,
         cancelable: true
       });
-      activeElement.dispatchEvent(event);
-    }, sensitiveText);
 
-    // Give extension time to react
-    await new Promise(r => setTimeout(r, 2000));
+      // dispatchEvent returns false if preventDefault was called
+      const dispatchResult = activeElement.dispatchEvent(event);
 
-    const result = await page.$eval('#target', el => el.value);
-    console.log("Pasted text:   '" + result + "'");
+      return {
+        defaultPrevented: event.defaultPrevented,
+        dispatchResult: dispatchResult
+      };
+    });
 
-    if (result.includes('[REDACTED_EMAIL]') && result.includes('[REDACTED_AWS_KEY]')) {
-        console.log("TEST PASSED: Sanitization successful.");
+    console.log("Result:", result);
+
+    if (result.defaultPrevented === false && result.dispatchResult === true) {
+        console.log("TEST PASSED: Clean paste handled correctly (preventDefault NOT called).");
     } else {
-        console.log("TEST FAILED: Sanitization failed. Content was: '" + result + "'");
+        console.log("TEST FAILED: preventDefault was called.");
         process.exit(1);
     }
   } finally {
