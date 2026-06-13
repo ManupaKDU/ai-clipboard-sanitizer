@@ -10,9 +10,6 @@
     "https://claude.ai/*",
     "https://copilot.microsoft.com/*"
   ],
-  "background": {
-    "service_worker": "background.js"
-  },
   "content_scripts": [
     {
       "matches": [
@@ -21,7 +18,10 @@
         "https://claude.ai/*",
         "https://copilot.microsoft.com/*"
       ],
-      "js": ["rules.js", "content.js"]
+      "js": [
+        "rules.js",
+        "content.js"
+      ]
     }
   ],
   "action": {
