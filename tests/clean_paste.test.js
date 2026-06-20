@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer');
 const path = require('path');
+const { injectScripts } = require('./test_helpers');
 
 (async () => {
   const extensionPath = path.resolve(__dirname, '../chrome');
@@ -21,9 +22,7 @@ const path = require('path');
     const page = await browser.newPage();
     await page.goto(testUrl);
 
-    // Manually inject scripts for testing to ensure they are loaded
-    await page.addScriptTag({ path: path.resolve(__dirname, '../rules.js') });
-    await page.addScriptTag({ path: path.resolve(__dirname, '../content.js') });
+    await injectScripts(page);
 
     // Focus textarea
     await page.focus('#target');

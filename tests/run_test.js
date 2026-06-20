@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer');
 const path = require('path');
+const { injectScripts } = require('./test_helpers');
 
 (async () => {
   const extensionPath = path.resolve(__dirname, '../chrome');
@@ -23,9 +24,7 @@ const path = require('path');
 
     page.on('console', msg => console.log('PAGE LOG:', msg.text()));
 
-    // Manually inject scripts for testing if extension loading fails in headless mode
-    await page.addScriptTag({ path: path.resolve(__dirname, '../rules.js') });
-    await page.addScriptTag({ path: path.resolve(__dirname, '../content.js') });
+    await injectScripts(page);
 
     // Sensitive string
     const sensitiveText = "Contact me at bob@example.com or use key AKIA1234567890123456";
