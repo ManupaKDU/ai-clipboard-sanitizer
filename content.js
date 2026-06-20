@@ -19,14 +19,15 @@ document.addEventListener('paste', (event) => {
     const activeElement = document.activeElement;
     
     if (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT') {
-      const start = activeElement.selectionStart;
-      const end = activeElement.selectionEnd;
-      const text = activeElement.value;
-      activeElement.value = text.slice(0, start) + sanitizedText + text.slice(end);
-      activeElement.selectionStart = activeElement.selectionEnd = start + sanitizedText.length;
-
-      // Dispatch input event for frameworks
-      activeElement.dispatchEvent(new Event('input', { bubbles: true }));
+      try {
+        activeElement.setRangeText(sanitizedText, activeElement.selectionStart, activeElement.selectionEnd, 'end');
+        // Dispatch input event for frameworks
+        activeElement.dispatchEvent(new Event('input', { bubbles: true }));
+      } catch (e) {
+        // Fallback for input types that don't support selection (e.g., type="number", type="email")
+        // This prevents unhandled InvalidStateError exceptions
+        document.execCommand('insertText', false, sanitizedText);
+      }
     } else if (activeElement.isContentEditable) {
       const selection = window.getSelection();
       if (!selection.rangeCount) return;

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <input type="number" id="numInput" value="123">
+  <input type="email" id="emailInput" value="test@example.com">
+  <input type="text" id="textInput" value="text">
+  <script>
+    function testInput(id) {
+      const el = document.getElementById(id);
+      try {
+        console.log(id, "selectionStart:", el.selectionStart);
+      } catch (e) {
+        console.log(id, "selectionStart Error:", e.name, e.message);
+      }
+      try {
+        el.setRangeText("abc");
+        console.log(id, "setRangeText success, new value:", el.value);
+      } catch (e) {
+        console.log(id, "setRangeText Error:", e.name, e.message);
+      }
+    }
+    testInput('numInput');
+    testInput('emailInput');
+    testInput('textInput');
+  </script>
+</body>
+</html>
