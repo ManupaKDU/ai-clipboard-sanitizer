@@ -25,6 +25,13 @@ function testSanitizeText() {
     'Should redact AWS Access Keys'
   );
 
+  // 3b. AWS Access Key Boundary Matching
+  assert.strictEqual(
+    sanitizeText('Fake key _AKIA1234567890123456_ and xASIA1234567890123456x embedded'),
+    'Fake key _[REDACTED_API_KEY]_ and [REDACTED_API_KEY] embedded',
+    'Should not redact AWS Access Keys if they are part of a larger string (boundary check)'
+  );
+
   // 4. Generic API Key Redaction
   assert.strictEqual(
     sanitizeText('API Key: abcdefghijklmnopqrstuvwxyz123'),

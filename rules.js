@@ -12,7 +12,7 @@ const SENSITIVE_PATTERNS = [
   },
   {
     name: "AWS Access Key",
-    regex: /(AKIA|ASIA)[0-9A-Z]{16}/g,
+    regex: /\b(AKIA|ASIA)[0-9A-Z]{16}\b/g,
     replacement: "[REDACTED_AWS_KEY]"
   },
   {
