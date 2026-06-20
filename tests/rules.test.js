@@ -82,6 +82,22 @@ function testSanitizeText() {
     'Should handle number input'
   );
 
+  // 12. Object input
+  const testObj = { key: 'value' };
+  assert.strictEqual(
+    sanitizeText(testObj),
+    testObj,
+    'Should handle object input'
+  );
+
+  // 13. Array input
+  const testArr = ['value1', 'value2'];
+  assert.strictEqual(
+    sanitizeText(testArr),
+    testArr,
+    'Should handle array input'
+  );
+
   console.log('All unit tests passed!');
 }
 
