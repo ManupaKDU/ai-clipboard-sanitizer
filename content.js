@@ -24,9 +24,6 @@ document.addEventListener('paste', (event) => {
       const text = activeElement.value;
       activeElement.value = text.slice(0, start) + sanitizedText + text.slice(end);
       activeElement.selectionStart = activeElement.selectionEnd = start + sanitizedText.length;
-
-      // Dispatch input event for frameworks
-      activeElement.dispatchEvent(new Event('input', { bubbles: true }));
     } else if (activeElement.isContentEditable) {
       const selection = window.getSelection();
       if (!selection.rangeCount) return;
@@ -42,9 +39,11 @@ document.addEventListener('paste', (event) => {
       range.collapse(true);
       selection.removeAllRanges();
       selection.addRange(range);
-
-      // Dispatch input event for frameworks
-      activeElement.dispatchEvent(new Event('input', { bubbles: true }));
+    } else {
+      return;
     }
+
+    // Dispatch input event for frameworks
+    activeElement.dispatchEvent(new Event('input', { bubbles: true }));
   }
 });
