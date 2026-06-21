@@ -1,10 +1,16 @@
 
 const puppeteer = require('puppeteer');
 const path = require('path');
+const { spawn } = require('child_process');
 
 (async () => {
+  // Start a local server
+  const server = spawn('python3', ['-m', 'http.server', '8000'], { cwd: __dirname });
+
+  await new Promise(r => setTimeout(r, 2000));
+
   const extensionPath = path.resolve(__dirname, '../chrome');
-  const testUrl = 'file://' + path.resolve(__dirname, 'test.html');
+  const testUrl = 'http://localhost:8000/test.html';
 
   console.log('Launching browser with extension...');
   const browser = await puppeteer.launch({
@@ -67,5 +73,6 @@ const path = require('path');
     }
   } finally {
     await browser.close();
+    server.kill();
   }
 })();
