@@ -1,17 +1,13 @@
-const puppeteer = require('puppeteer');
 const path = require('path');
 const fs = require('fs');
+const { launchBrowser } = require('./test_utils');
 
 (async () => {
   const rulesPath = path.resolve(__dirname, '../rules.js');
   const rulesContent = fs.readFileSync(rulesPath, 'utf8');
 
   console.log('Launching browser...');
-  const browser = await puppeteer.launch({
-    headless: true,
-    executablePath: '/usr/bin/google-chrome',
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
+  const browser = await launchBrowser({ loadExtension: false });
 
   try {
     const page = await browser.newPage();
