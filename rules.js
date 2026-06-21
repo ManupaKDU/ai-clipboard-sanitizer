@@ -31,6 +31,6 @@ function sanitizeText(text) {
   return sanitized;
 }
 
-if (typeof module !== 'undefined' && module.exports) {
+if (typeof module !== 'undefined' && typeof module.exports === 'object' && !module.nodeType) {
   module.exports = { sanitizeText, SENSITIVE_PATTERNS };
 }
