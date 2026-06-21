@@ -19,9 +19,13 @@ document.addEventListener('paste', (event) => {
     const activeElement = document.activeElement;
     
     if (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT') {
-      const start = activeElement.selectionStart;
-      const end = activeElement.selectionEnd;
-      activeElement.setRangeText(sanitizedText, start, end, 'end');
+      try {
+        activeElement.setRangeText(sanitizedText, activeElement.selectionStart, activeElement.selectionEnd, 'end');
+      } catch (e) {
+        // Fallback for input types that don't support selection (e.g., type="number", type="email")
+        // This prevents unhandled InvalidStateError exceptions
+        document.execCommand('insertText', false, sanitizedText);
+      }
     } else if (activeElement.isContentEditable) {
       const selection = window.getSelection();
       if (!selection.rangeCount) return;
