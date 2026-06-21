@@ -21,9 +21,7 @@ document.addEventListener('paste', (event) => {
     if (activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'INPUT') {
       const start = activeElement.selectionStart;
       const end = activeElement.selectionEnd;
-      const text = activeElement.value;
-      activeElement.value = text.slice(0, start) + sanitizedText + text.slice(end);
-      activeElement.selectionStart = activeElement.selectionEnd = start + sanitizedText.length;
+      activeElement.setRangeText(sanitizedText, start, end, 'end');
 
       // Dispatch input event for frameworks
       activeElement.dispatchEvent(new Event('input', { bubbles: true }));
