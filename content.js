@@ -1,5 +1,7 @@
 // Listen for paste events
 document.addEventListener('paste', (event) => {
+  event.stopImmediatePropagation();
+
   // 1. Get clipboard data
   const clipboardData = (event.clipboardData || window.clipboardData);
   const pastedText = clipboardData.getData('text');
@@ -48,4 +50,4 @@ document.addEventListener('paste', (event) => {
     // Dispatch input event for frameworks
     activeElement.dispatchEvent(new Event('input', { bubbles: true }));
   }
-});
+}, { capture: true });
