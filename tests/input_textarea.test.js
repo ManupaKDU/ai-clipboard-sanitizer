@@ -123,6 +123,47 @@ const path = require('path');
         hasError = true;
     }
 
+    // Test INPUT element that doesn't support selection (e.g., type="email")
+    console.log("Testing INPUT (type=email) fallback insertion...");
+    const emailInputResult = await page.evaluate(() => {
+      const input = document.createElement('input');
+      input.type = 'email';
+      input.id = 'emailTarget';
+      document.body.appendChild(input);
+
+      input.value = "test";
+      input.focus();
+
+      let inputEventFired = false;
+      input.addEventListener('input', () => {
+        inputEventFired = true;
+      });
+
+      const dataTransfer = new DataTransfer();
+      dataTransfer.setData('text', 'bob@example.com');
+      const event = new ClipboardEvent('paste', {
+        clipboardData: dataTransfer,
+        bubbles: true,
+        cancelable: true
+      });
+      input.dispatchEvent(event);
+
+      return {
+        value: input.value,
+        inputEventFired: inputEventFired
+      };
+    });
+
+    const expectedEmailInputValue = "test[REDACTED_EMAIL]";
+
+    if (emailInputResult.value === expectedEmailInputValue &&
+        emailInputResult.inputEventFired) {
+        console.log("INPUT (type=email) TEST PASSED");
+    } else {
+        console.log("INPUT (type=email) TEST FAILED:", emailInputResult);
+        hasError = true;
+    }
+
   } finally {
     await browser.close();
   }
