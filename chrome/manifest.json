@@ -18,6 +18,7 @@
         "https://claude.ai/*",
         "https://copilot.microsoft.com/*"
       ],
+      "run_at": "document_start",
       "js": [
         "rules.js",
         "content.js"
