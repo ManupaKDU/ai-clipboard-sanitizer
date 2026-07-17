@@ -105,6 +105,13 @@ function testSanitizeText() {
     'Should handle array input'
   );
 
+  // 14. Unicode and Emoji boundaries
+  assert.strictEqual(
+    sanitizeText('Email: alice@example.com🎉 and Key: AKIA1234567890123456👍 Unicode: 中文'),
+    'Email: [REDACTED_EMAIL]🎉 and Key: [REDACTED_AWS_KEY]👍 Unicode: 中文',
+    'Should handle unicode and emojis at boundaries correctly'
+  );
+
   console.log('All unit tests passed!');
 }
 
