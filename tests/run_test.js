@@ -1,7 +1,7 @@
 
-const puppeteer = require('puppeteer');
 const path = require('path');
 const { spawn } = require('child_process');
+const { launchBrowser } = require('./test_utils');
 
 (async () => {
   // Start a local server
@@ -17,20 +17,10 @@ const { spawn } = require('child_process');
 
   await new Promise(r => setTimeout(r, 2000));
 
-  const extensionPath = path.resolve(__dirname, '../chrome');
   const testUrl = 'http://localhost:8000/test.html';
 
   console.log('Launching browser with extension...');
-  const browser = await puppeteer.launch({
-    headless: true,
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome',
-    args: [
-      `--disable-extensions-except=${extensionPath}`,
-      `--load-extension=${extensionPath}`,
-      '--no-sandbox',
-      '--disable-setuid-sandbox'
-    ]
-  });
+  const browser = await launchBrowser();
 
   try {
     const page = await browser.newPage();
