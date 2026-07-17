@@ -22,11 +22,21 @@ const SENSITIVE_PATTERNS = [
   }
 ];
 
+// Fast-path combined check to avoid loop overhead on completely clean strings
+// Construct with 'i' flag if any underlying pattern uses it, to ensure we don't skip valid matches.
+const _combinedFlags = SENSITIVE_PATTERNS.some(rule => rule.regex.flags.includes('i')) ? 'i' : '';
+const COMBINED_TEST_REGEX = new RegExp(
+  SENSITIVE_PATTERNS.map(rule => rule.regex.source).join('|'),
+  _combinedFlags
+);
+
 function sanitizeText(text) {
   if (typeof text !== 'string') return text;
+  if (!COMBINED_TEST_REGEX.test(text)) return text;
+
   let sanitized = text;
-  for (const rule of SENSITIVE_PATTERNS) {
-    sanitized = sanitized.replace(rule.regex, rule.replacement);
+  for (let i = 0; i < SENSITIVE_PATTERNS.length; i++) {
+    sanitized = sanitized.replace(SENSITIVE_PATTERNS[i].regex, SENSITIVE_PATTERNS[i].replacement);
   }
   return sanitized;
 }
